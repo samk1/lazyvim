@@ -1,9 +1,6 @@
 -- bootstrap lazy.nvim, LazyVim and your plugins
 require("config.lazy")
 
-vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
-vim.opt.foldmethod = "expr"
-
 local lazyvim_root = require("lazyvim.util.root")
 local Path = require("plenary.path")
 
@@ -36,3 +33,13 @@ vim.keymap.set(
   make_copier(get_relative_path_and_line),
   { noremap = true, desc = "Copy file path and line number" }
 )
+
+vim.api.nvim_create_autocmd("LspAttach", {
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if client:supports_method("textDocument/foldingRange") then
+      vim.wo.foldmethod = "expr"
+      vim.wo.foldexpr = "v:lua.vim.lsp.foldexpr()"
+    end
+  end,
+})
